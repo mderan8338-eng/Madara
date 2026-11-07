@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanguard - Modern E-Commerce Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#FF1E27',
+                            hover: '#D90429',
+                            dark: '#0A0A0A',
+                            card: '#121212',
+                            border: '#262626'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0A0A0A;
+            color: #FFFFFF;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism & Custom Effects */
+        .glass-panel {
+            background: rgba(18, 18, 18, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .red-glow {
+            box-shadow: 0 0 35px -5px rgba(255, 30, 39, 0.35);
+        }
+
+        .red-glow-sm {
+            box-shadow: 0 0 15px -3px rgba(255, 30, 39, 0.3);
+        }
+
+        /* Smooth Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0A0A0A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #262626;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF1E27;
+        }
+
+        /* Micro-animations */
+        .hover-lift {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .hover-lift:hover {
+            transform: translateY(-4px);
+        }
+
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+        }
+
+        /* Navigation indicator animation */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #FF1E27;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-red selection:text-white">
+
+    <!-- TOP ANNOUNCEMENT BAR -->
+    <div class="bg-brand-red text-white text-xs font-semibold py-1.5 px-4 text-center tracking-wider uppercase flex items-center justify-center gap-2">
+        <span class="bg-black/20 px-2 py-0.5 rounded text-[10px]">NEW</span>
+        <span>Zero listing fees for all verified creators this month!</span>
+    </div>
+
+    <!-- MAIN NAVIGATION -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-brand-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+            
+            <!-- BRAND LOGO -->
+            <div class="flex items-center gap-8">
+                <a href="#" onclick="switchView('marketplace')" class="flex items-center gap-2 group">
+                    <div class="w-10 h-10 rounded-xl bg-brand-red flex items-center justify-center text-white font-extrabold text-xl tracking-tighter transform group-hover:rotate-6 transition-transform red-glow-sm">
+                        V
+                    </div>
+                    <span class="text-2xl font-extrabold tracking-tight text-white">VAN<span class="text-brand-red">GUARD</span></span>
+                </a>
+
+                <!-- DESKTOP NAV LINKS -->
+                <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-300">
+                    <a href="#" onclick="switchView('marketplace')" class="nav-link active hover:text-white transition-colors">Marketplace</a>
+                    <a href="#" onclick="filterCategory('Electronics')" class="nav-link hover:text-white transition-colors">Tech</a>
+                    <a href="#" onclick="filterCategory('Fashion')" class="nav-link hover:text-white transition-colors">Apparel</a>
+                    <a href="#" onclick="filterCategory('Collectibles')" class="nav-link hover:text-white transition-colors">Collectibles</a>
+                </nav>
+            </div>
+
+            <!-- HIGH-CONTRAST SEARCH BAR (Strategic White Accent for Readability) -->
+            <div class="flex-1 max-w-md mx-4">
+                <div class="relative">
+                    <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Search high-end products, gear, listings..." 
+                        class="w-full bg-white text-black placeholder-gray-500 font-medium text-sm pl-11 pr-4 py-2.5 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-red transition-all">
+                    <i data-lucide="search" class="absolute left-4 top-3 w-4 h-4 text-gray-500"></i>
+                    <button class="absolute right-3 top-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full font-semibold transition-colors">
+                        /
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT ACTIONS -->
+            <div class="flex items-center gap-3 sm:gap-4">
+                <!-- SELL BUTTON -->
+                <button onclick="openListingModal()" class="hidden sm:flex items-center gap-2 bg-brand-red hover:bg-brand-hover text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-all red-glow-sm hover:scale-105">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>Sell Product</span>
+                </button>
+
+                <!-- MESSAGES ICON (WITH BADGE) -->
+                <button onclick="toggleChatDrawer()" class="relative p-2.5 rounded-xl bg-brand-card border border-brand-border hover:border-gray-600 text-gray-300 hover:text-white transition-all">
+                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                    <span id="unreadBadge" class="absolute -top-1 -right-1 w-5 h-5 bg-brand-red text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-brand-dark">2</span>
+                </button>
+
+                <!-- AUTH / PROFILE AREA -->
+                <div id="authArea">
+                    <!-- Dynamic rendering based on login state -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="relative overflow-hidden pt-12 pb-16 border-b border-brand-border/50">
+        <!-- Background Gradient Glows -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-brand-red/15 blur-[120px] rounded-full pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+                <div class="max-w-2xl text-center md:text-left">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-red/10 border border-brand-red/30 text-brand-red text-xs font-bold uppercase tracking-wider mb-4">
+                        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                        Next-Gen Marketplace
+                    </div>
+                    <h1 class="text-4xl sm:text-6xl font-black text-white tracking-tight leading-none mb-6">
+                        BUY & SELL WITH <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-red via-red-400 to-white">ABSOLUTE POWER.</span>
+                    </h1>
+                    <p class="text-gray-400 text-base sm:text-lg mb-8 max-w-xl font-normal">
+                        Experience lightning-fast transactions, real-time seller messaging, and curated premium gear in a high-octane dark setup.
+                    </p>
+                    <div class="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                        <a href="#browse" class="bg-white text-black font-bold text-sm px-6 py-3.5 rounded-xl hover:bg-gray-200 transition-all shadow-lg flex items-center gap-2">
+                            <span>Explore Listings</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </a>
+                        <button onclick="openListingModal()" class="bg-brand-card text-white border border-brand-border hover:border-brand-red font-semibold text-sm px-6 py-3.5 rounded-xl transition-all">
+                            Post an Item
+                        </button>
+                    </div>
+                </div>
+
+                <!-- HERO STATS CARDS -->
+                <div class="grid grid-cols-2 gap-4 w-full md:w-auto">
+                    <div class="glass-panel p-5 rounded-2xl border border-brand-border text-center md:text-left">
+                        <p class="text-3xl font-extrabold text-white">24/7</p>
+                        <p class="text-xs text-gray-400 mt-1 uppercase font-semibold">Instant Messaging</p>
+                    </div>
+                    <div class="glass-panel p-5 rounded-2xl border border-brand-border text-center md:text-left">
+                        <p class="text-3xl font-extrabold text-brand-red">$0</p>
+                        <p class="text-xs text-gray-400 mt-1 uppercase font-semibold">Seller Commission</p>
+                    </div>
+                    <div class="glass-panel p-5 rounded-2xl border border-brand-border text-center md:text-left">
+                        <p class="text-3xl font-extrabold text-white">100%</p>
+                        <p class="text-xs text-gray-400 mt-1 uppercase font-semibold">Buyer Protection</p>
+                    </div>
+                    <div class="glass-panel p-5 rounded-2xl border border-brand-border text-center md:text-left">
+                        <p class="text-3xl font-extrabold text-brand-red">4.9★</p>
+                        <p class="text-xs text-gray-400 mt-1 uppercase font-semibold">User Satisfaction</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main id="browse" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        
+        <!-- CATEGORY & FILTER TABS -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+            <div class="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto" id="categoryTabs">
+                <!-- Dynamically Generated Category Buttons -->
+            </div>
+
+            <div class="flex items-center gap-3 self-end sm:self-auto">
+                <span class="text-xs text-gray-400 font-semibold uppercase tracking-wider">Sort by:</span>
+                <select id="sortSelect" onchange="handleSort()" class="bg-brand-card border border-brand-border text-gray-200 text-xs font-semibold rounded-lg px-3 py-2 focus:outline-none focus:border-brand-red">
+                    <option value="featured">Featured First</option>
+                    <option value="low-high">Price: Low to High</option>
+                    <option value="high-low">Price: High to Low</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- PRODUCTS GRID -->
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Dynamically Populated Product Cards -->
+        </div>
+
+        <!-- EMPTY STATE (Hidden by default) -->
+        <div id="emptyState" class="hidden text-center py-20 glass-panel rounded-3xl border border-brand-border">
+            <div class="w-16 h-16 bg-brand-red/10 text-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="package-search" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">No Products Found</h3>
+            <p class="text-gray-400 text-sm max-w-md mx-auto mb-6">We couldn't find any listings matching your active filters or search terms.</p>
+            <button onclick="resetFilters()" class="bg-brand-red text-white text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-brand-hover transition-colors">
+                Clear Filters
+            </button>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-black border-t border-brand-border mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-brand-red flex items-center justify-center text-white font-extrabold text-base">V</div>
+                        <span class="text-xl font-black text-white">VAN<span class="text-brand-red">GUARD</span></span>
+                    </div>
+                    <p class="text-gray-400 text-xs leading-relaxed">
+                        The ultimate high-performance marketplace designed for elite buyers and sellers worldwide.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white text-sm font-bold uppercase tracking-wider mb-4">Marketplace</h4>
+                    <ul class="space-y-2 text-xs text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">All Products</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Featured Gear</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Verified Sellers</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white text-sm font-bold uppercase tracking-wider mb-4">Account</h4>
+                    <ul class="space-y-2 text-xs text-gray-400">
+                        <li><a href="#" onclick="openAuthModal()" class="hover:text-white transition-colors">Gmail Login</a></li>
+                        <li><a href="#" onclick="openListingModal()" class="hover:text-white transition-colors">Create Listing</a></li>
+                        <li><a href="#" onclick="toggleChatDrawer()" class="hover:text-white transition-colors">Messages</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white text-sm font-bold uppercase tracking-wider mb-4">Security</h4>
+                    <p class="text-gray-400 text-xs mb-3">All transactions are simulated and protected via encrypted escrow protocols.</p>
+                    <div class="flex gap-2">
+                        <span class="bg-brand-card border border-brand-border text-gray-300 text-[10px] px-2 py-1 rounded font-mono">SSL 256-BIT</span>
+                        <span class="bg-brand-card border border-brand-border text-gray-300 text-[10px] px-2 py-1 rounded font-mono">OAUTH 2.0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-brand-border/60 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4">
+                <p>&copy; 2026 Vanguard Platform Inc. All rights reserved.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="hover:text-gray-400">Privacy Policy</a>
+                    <a href="#" class="hover:text-gray-400">Terms of Service</a>
+                    <a href="#" class="hover:text-gray-400">Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= MODALS & DRAWERS ================= -->
+
+    <!-- GMAIL AUTH MODAL -->
+    <div id="authModal" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-border rounded-3xl p-8 max-w-md w-full relative shadow-2xl">
+            <button onclick="closeAuthModal()" class="absolute top-6 right-6 text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-brand-red/10 text-brand-red rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-2xl font-black text-white">Welcome to Vanguard</h3>
+                <p class="text-gray-400 text-xs mt-1">Sign in to list items, message sellers, and manage orders</p>
+            </div>
+
+            <!-- GOOGLE / GMAIL LOGIN BUTTON -->
+            <button onclick="simulateGoogleLogin()" class="w-full bg-white hover:bg-gray-100 text-gray-900 font-bold text-sm py-3.5 px-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-md mb-4">
+                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>Continue with Gmail</span>
+            </button>
+
+            <div class="relative flex py-3 items-center">
+                <div class="flex-grow border-t border-brand-border"></div>
+                <span class="flex-shrink mx-4 text-gray-500 text-[10px] uppercase font-bold tracking-widest">Instant Auth</span>
+                <div class="flex-grow border-t border-brand-border"></div>
+            </div>
+
+            <p class="text-[11px] text-gray-500 text-center mt-4">
+                By continuing, you agree to Vanguard's Terms of Service and Privacy Policy. Secure authentication provided via Google OAuth 2.0.
+            </p>
+        </div>
+    </div>
+
+    <!-- NEW LISTING MODAL -->
+    <div id="listingModal" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-brand-card border border-brand-border rounded-3xl p-6 sm:p-8 max-w-lg w-full relative shadow-2xl my-8">
+            <button onclick="closeListingModal()" class="absolute top-6 right-6 text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="mb-6">
+                <h3 class="text-2xl font-black text-white">Create New Listing</h3>
+                <p class="text-gray-400 text-xs mt-1">Post your item to the Vanguard Marketplace in seconds.</p>
+            </div>
+
+            <form id="listingForm" onsubmit="handleCreateListing(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">Product Title</label>
+                    <input type="text" id="postTitle" required placeholder="e.g. Cyberpunk Mechanical Keyboard" 
+                        class="w-full bg-black border border-brand-border text-white text-sm rounded-xl p-3 focus:outline-none focus:border-brand-red">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">Price ($ USD)</label>
+                        <input type="number" id="postPrice" step="0.01" required placeholder="299.00" 
+                            class="w-full bg-black border border-brand-border text-white text-sm rounded-xl p-3 focus:outline-none focus:border-brand-red">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">Category</label>
+                        <select id="postCategory" required class="w-full bg-black border border-brand-border text-white text-sm rounded-xl p-3 focus:outline-none focus:border-brand-red">
+                            <option value="Electronics">Electronics</option>
+                            <option value="Fashion">Fashion</option>
+                            <option value="Collectibles">Collectibles</option>
+                            <option value="Gaming">Gaming</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">Image URL</label>
+                    <input type="url" id="postImage" required placeholder="https://images.unsplash.com/photo-..." 
+                        class="w-full bg-black border border-brand-border text-white text-sm rounded-xl p-3 focus:outline-none focus:border-brand-red">
+                    <p class="text-[10px] text-gray-500 mt-1">Paste a high-resolution Unsplash or direct image web URL.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">Description</label>
+                    <textarea id="postDesc" rows="3" required placeholder="Describe condition, specifications, and reason for selling..." 
+                        class="w-full bg-black border border-brand-border text-white text-sm rounded-xl p-3 focus:outline-none focus:border-brand-red resize-none"></textarea>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-brand-red hover:bg-brand-hover text-white font-bold text-sm py-3.5 rounded-xl transition-all red-glow-sm">
+                        Publish Listing Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PRODUCT DETAIL MODAL -->
+    <div id="productModal" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-brand-card border border-brand-border rounded-3xl p-6 sm:p-8 max-w-2xl w-full relative shadow-2xl my-8">
+            <button onclick="closeProductModal()" class="absolute top-6 right-6 z-10 text-gray-400 hover:text-white bg-black/50 p-2 rounded-full">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div id="productModalContent">
+                <!-- Dynamically populated detail view -->
+            </div>
+        </div>
+    </div>
+
+    <!-- REAL-TIME MESSAGING DRAWER -->
+    <div id="chatDrawer" class="fixed inset-y-0 right-0 z-50 w-full sm:w-96 bg-brand-card border-l border-brand-border transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+        <!-- CHAT HEADER -->
+        <div class="p-4 border-b border-brand-border flex items-center justify-between bg-black/40">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <div class="w-9 h-9 rounded-full bg-brand-red flex items-center justify-center text-white font-bold text-sm">
+                        <span id="chatSellerInitials">S</span>
+                    </div>
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-brand-card"></span>
+                </div>
+                <div>
+                    <h4 id="chatSellerName" class="text-sm font-bold text-white">Select a Conversation</h4>
+                    <p id="chatItemContext" class="text-[11px] text-brand-red font-medium truncate max-w-[180px]">Direct Inbox</p>
+                </div>
+            </div>
+            <button onclick="toggleChatDrawer()" class="text-gray-400 hover:text-white p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <!-- CONVERSATION LIST SELECTOR -->
+        <div class="px-4 py-2 border-b border-brand-border/60 bg-black/20 flex gap-2 overflow-x-auto text-xs" id="chatThreadList">
+            <!-- Active chat tabs rendered here -->
+        </div>
+
+        <!-- CHAT MESSAGES BODY -->
+        <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-3 bg-black/10">
+            <!-- Messages populated dynamically -->
+        </div>
+
+        <!-- CHAT INPUT -->
+        <div class="p-4 border-t border-brand-border bg-black/40">
+            <form onsubmit="handleSendMessage(event)" class="flex gap-2">
+                <input type="text" id="chatInput" placeholder="Write a message to seller..." required 
+                    class="flex-1 bg-black border border-brand-border text-white text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-brand-red">
+                <button type="submit" class="bg-brand-red hover:bg-brand-hover text-white p-2.5 rounded-xl transition-all flex items-center justify-center">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION TOAST CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        // INITIAL STATE & DUMMY DATA
+        let currentUser = null; // { name, email, avatar, googleId }
+        let activeCategory = 'All';
+        let searchQuery = '';
+        let currentSort = 'featured';
+        let activeChatThreadId = 'thread_1';
+
+        const categories = ['All', 'Electronics', 'Fashion', 'Collectibles', 'Gaming'];
+
+        let products = [
+            {
+                id: 'prod_1',
+                title: 'Cyberpunk Neon Cyberdeck Rig',
+                price: 1299.00,
+                category: 'Electronics',
+                seller: 'NeoTech_Labs',
+                sellerEmail: 'neotech@gmail.com',
+                image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&w=800&q=80',
+                desc: 'Custom built cyberpunk desktop terminal with mechanical switches, OLED side monitor, and liquid red cooling circuit.',
+                featured: true
+            },
+            {
+                id: 'prod_2',
+                title: 'Matte Black Wireless Headphones',
+                price: 249.50,
+                category: 'Electronics',
+                seller: 'AudioPhile_X',
+                sellerEmail: 'audio.x@gmail.com',
+                image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+                desc: 'Studio grade noise cancellation, custom tuned drivers, 40-hour battery life with ultra-low latency audio sync.',
+                featured: true
+            },
+            {
+                id: 'prod_3',
+                title: 'Vanguard Stealth Bomber Jacket',
+                price: 180.00,
+                category: 'Fashion',
+                seller: 'Vanguard_Apparel',
+                sellerEmail: 'apparel@gmail.com',
+                image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=80',
+                desc: 'Water-resistant tactical jacket with crimson internal lining, magnetic utility pockets, and reinforced stitching.',
+                featured: false
+            },
+            {
+                id: 'prod_4',
+                title: 'Limited Edition Retro Console',
+                price: 420.00,
+                category: 'Gaming',
+                seller: 'RetroVault',
+                sellerEmail: 'retrovault@gmail.com',
+                image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80',
+                desc: 'Fully restored retro gaming rig preloaded with licensed classic games. Custom red backlight mods installed.',
+                featured: true
+            },
+            {
+                id: 'prod_5',
+                title: 'Precision Mechanical Timepiece',
+                price: 890.00,
+                category: 'Collectibles',
+                seller: 'ChronoCollect',
+                sellerEmail: 'chrono@gmail.com',
+                image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
+                desc: 'Automatic movement wristwatch with dark titanium case and sapphire crystal display casing.',
+                featured: false
+            },
+            {
+                id: 'prod_6',
+                title: 'Pro Ergonomic Controller Unit',
+                price: 120.00,
+                category: 'Gaming',
+                seller: 'ProGamer_Zone',
+                sellerEmail: 'progamer@gmail.com',
+                image: 'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?auto=format&fit=crop&w=800&q=80',
+                desc: 'Custom macro paddles, adjustable trigger locks, and rubberized anti-slip grip for competitive play.',
+                featured: false
+            }
+        ];
+
+        // MOCK REAL-TIME MESSAGING STORAGE
+        let chatThreads = {
+            'thread_1': {
+                id: 'thread_1',
+                sellerName: 'NeoTech_Labs',
+                productId: 'prod_1',
+                productTitle: 'Cyberpunk Neon Cyberdeck Rig',
+                messages: [
+                    { sender: 'NeoTech_Labs', text: 'Hey there! Interested in the Cyberdeck Rig?', time: '10:14 AM' },
+                    { sender: 'You', text: 'Yes! Is the liquid cooling loop pre-filled?', time: '10:16 AM' },
+                    { sender: 'NeoTech_Labs', text: 'Absolutely. Sealed and pressure tested prior to shipping.', time: '10:18 AM' }
+                ]
+            },
+            'thread_2': {
+                id: 'thread_2',
+                sellerName: 'AudioPhile_X',
+                productId: 'prod_2',
+                productTitle: 'Matte Black Wireless Headphones',
+                messages: [
+                    { sender: 'AudioPhile_X', text: 'Hi! I can ship these out today if ordered soon.', time: 'Yesterday' }
+                ]
+            }
+        };
+
+        // DOM INITIALIZATION
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderAuthArea();
+            renderCategoryTabs();
+            renderProducts();
+            renderChatThreads();
+        });
+
+        // RENDER AUTH UI
+        function renderAuthArea() {
+            const authArea = document.getElementById('authArea');
+            if (currentUser) {
+                authArea.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="text-right hidden md:block">
+                            <p class="text-xs font-bold text-white">${currentUser.name}</p>
+                            <p class="text-[10px] text-gray-400 font-mono">${currentUser.email}</p>
+                        </div>
+                        <img src="${currentUser.avatar}" alt="Avatar" class="w-9 h-9 rounded-xl border border-brand-red">
+                        <button onclick="handleLogout()" class="text-gray-400 hover:text-white text-xs p-1">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+            } else {
+                authArea.innerHTML = `
+                    <button onclick="openAuthModal()" class="flex items-center gap-2 bg-brand-card hover:bg-black text-white border border-brand-border hover:border-gray-500 font-semibold text-xs px-3.5 py-2.5 rounded-xl transition-all">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        </svg>
+                        <span>Gmail Login</span>
+                    </button>
+                `;
+            }
+            lucide.createIcons();
+        }
+
+        // SIMULATE GOOGLE GMAIL OAUTH LOGIN
+        function simulateGoogleLogin() {
+            currentUser = {
+                name: 'Alex Vance',
+                email: 'alex.vance@gmail.com',
+                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+                googleId: 'goog_9923811'
+            };
+            closeAuthModal();
+            renderAuthArea();
+            showToast('Authenticated via Google Mail successfully!', 'success');
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            renderAuthArea();
+            showToast('Logged out of Vanguard session', 'info');
+        }
+
+        // CATEGORY TABS RENDERING
+        function renderCategoryTabs() {
+            const container = document.getElementById('categoryTabs');
+            container.innerHTML = categories.map(cat => `
+                <button onclick="filterCategory('${cat}')" 
+                    class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                        activeCategory === cat 
+                        ? 'bg-brand-red text-white red-glow-sm' 
+                        : 'bg-brand-card text-gray-400 border border-brand-border hover:text-white'
+                    }">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function filterCategory(cat) {
+            activeCategory = cat;
+            renderCategoryTabs();
+            renderProducts();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            renderProducts();
+        }
+
+        function handleSort() {
+            currentSort = document.getElementById('sortSelect').value;
+            renderProducts();
+        }
+
+        function resetFilters() {
+            activeCategory = 'All';
+            searchQuery = '';
+            document.getElementById('searchInput').value = '';
+            renderCategoryTabs();
+            renderProducts();
+        }
+
+        // PRODUCTS RENDER ENGINE
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            // Filtering
+            let filtered = products.filter(p => {
+                const matchesCat = activeCategory === 'All' || p.category === activeCategory;
+                const matchesSearch = p.title.toLowerCase().includes(searchQuery) || 
+                                      p.desc.toLowerCase().includes(searchQuery) ||
+                                      p.seller.toLowerCase().includes(searchQuery);
+                return matchesCat && matchesSearch;
+            });
+
+            // Sorting
+            if (currentSort === 'low-high') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (currentSort === 'high-low') {
+                filtered.sort((a, b) => b.price - a.price);
+            } else {
+                filtered.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-brand-card border border-brand-border rounded-2xl overflow-hidden hover-lift group flex flex-col justify-between">
+                    <div>
+                        <!-- IMAGE CONTAINER -->
+                        <div class="relative h-48 overflow-hidden bg-black/50">
+                            <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            ${p.featured ? `<span class="absolute top-3 left-3 bg-brand-red text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-md tracking-wider">FEATURED</span>` : ''}
+                            <button onclick="openProductModal('${p.id}')" class="absolute bottom-3 right-3 bg-black/80 hover:bg-brand-red text-white p-2 rounded-xl transition-colors backdrop-blur-sm">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+
+                        <!-- CONTENT -->
+                        <div class="p-5">
+                            <div class="flex items-center justify-between text-[11px] text-gray-400 mb-1">
+                                <span class="font-semibold uppercase tracking-wider text-brand-red">${p.category}</span>
+                                <span>by <span class="text-white font-medium">@${p.seller}</span></span>
+                            </div>
+                            <h3 class="text-base font-bold text-white mb-2 line-clamp-1 group-hover:text-brand-red transition-colors">${p.title}</h3>
+                            <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed">${p.desc}</p>
+                        </div>
+                    </div>
+
+                    <!-- CARD FOOTER -->
+                    <div class="px-5 pb-5 pt-0 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] text-gray-500 uppercase block font-semibold">Price</span>
+                            <span class="text-lg font-black text-white">$${p.price.toFixed(2)}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="initiateChatWithSeller('${p.seller}', '${p.id}', '${p.title}')" class="p-2.5 bg-black hover:bg-gray-800 text-gray-300 rounded-xl border border-brand-border hover:text-white transition-colors">
+                                <i data-lucide="message-square" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="buyNow('${p.title}', ${p.price})" class="bg-brand-red hover:bg-brand-hover text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all red-glow-sm">
+                                Buy Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        // CREATE NEW LISTING LOGIC
+        function handleCreateListing(e) {
+            e.preventDefault();
+            if (!currentUser) {
+                openAuthModal();
+                showToast('Please sign in with Gmail to post a listing.', 'info');
+                return;
+            }
+
+            const newProduct = {
+                id: 'prod_' + Date.now(),
+                title: document.getElementById('postTitle').value,
+                price: parseFloat(document.getElementById('postPrice').value),
+                category: document.getElementById('postCategory').value,
+                seller: currentUser.name.replace(/\s+/g, ''),
+                sellerEmail: currentUser.email,
+                image: document.getElementById('postImage').value,
+                desc: document.getElementById('postDesc').value,
+                featured: false
+            };
+
+            products.unshift(newProduct);
+            renderProducts();
+            closeListingModal();
+            document.getElementById('listingForm').reset();
+            showToast('Listing published successfully to marketplace!', 'success');
+        }
+
+        // PRODUCT DETAIL MODAL OPEN
+        function openProductModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const modalContent = document.getElementById('productModalContent');
+            modalContent.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="rounded-2xl overflow-hidden bg-black/60 h-64 md:h-full">
+                        <img src="${product.image}" alt="${product.title}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex flex-col justify-between">
+                        <div>
+                            <span class="text-xs font-bold text-brand-red uppercase tracking-wider">${product.category}</span>
+                            <h2 class="text-2xl font-black text-white mt-1 mb-2">${product.title}</h2>
+                            <p class="text-xs text-gray-400 mb-4 leading-relaxed">${product.desc}</p>
+                            
+                            <div class="p-3 bg-black/40 rounded-xl border border-brand-border mb-4">
+                                <span class="text-[10px] text-gray-500 uppercase block font-semibold">Seller Information</span>
+                                <div class="flex items-center justify-between mt-1">
+                                    <span class="text-xs font-bold text-white">@${product.seller}</span>
+                                    <span class="text-[10px] bg-green-500/10 text-green-400 border border-green-500/30 px-2 py-0.5 rounded">Verified Seller</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <span class="text-[10px] text-gray-500 uppercase block font-semibold">Listed Price</span>
+                                    <span class="text-2xl font-black text-white">$${product.price.toFixed(2)}</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="initiateChatWithSeller('${product.seller}', '${product.id}', '${product.title}'); closeProductModal();" class="bg-black hover:bg-gray-800 text-white font-bold text-xs py-3 rounded-xl border border-brand-border flex items-center justify-center gap-2 transition-colors">
+                                    <i data-lucide="message-square" class="w-4 h-4"></i>
+                                    <span>Chat Seller</span>
+                                </button>
+                                <button onclick="buyNow('${product.title}', ${product.price}); closeProductModal();" class="bg-brand-red hover:bg-brand-hover text-white font-bold text-xs py-3 rounded-xl transition-all red-glow-sm">
+                                    Buy Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('productModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        // REAL-TIME CHAT DRAWER SYSTEM
+        function toggleChatDrawer() {
+            const drawer = document.getElementById('chatDrawer');
+            drawer.classList.toggle('translate-x-full');
+        }
+
+        function renderChatThreads() {
+            const threadList = document.getElementById('chatThreadList');
+            threadList.innerHTML = Object.keys(chatThreads).map(threadId => {
+                const thread = chatThreads[threadId];
+                const isActive = threadId === activeChatThreadId;
+                return `
+                    <button onclick="switchChatThread('${threadId}')" 
+                        class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors ${
+                            isActive ? 'bg-brand-red text-white' : 'bg-black/40 text-gray-400 hover:text-white'
+                        }">
+                        @${thread.sellerName}
+                    </button>
+                `;
+            }).join('');
+
+            renderActiveMessages();
+        }
+
+        function switchChatThread(threadId) {
+            activeChatThreadId = threadId;
+            renderChatThreads();
+        }
+
+        function renderActiveMessages() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const thread = chatThreads[activeChatThreadId];
+
+            if (!thread) {
+                messagesContainer.innerHTML = `<p class="text-xs text-gray-500 text-center py-8">No active chat selected.</p>`;
+                return;
+            }
+
+            document.getElementById('chatSellerName').innerText = '@' + thread.sellerName;
+            document.getElementById('chatSellerInitials').innerText = thread.sellerName.charAt(0).toUpperCase();
+            document.getElementById('chatItemContext').innerText = thread.productTitle;
+
+            messagesContainer.innerHTML = thread.messages.map(msg => {
+                const isMe = msg.sender === 'You';
+                return `
+                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+                        <div class="max-w-[80%] rounded-2xl p-3 text-xs leading-relaxed ${
+                            isMe 
+                            ? 'bg-brand-red text-white rounded-br-none' 
+                            : 'bg-brand-card text-gray-200 border border-brand-border rounded-bl-none'
+                        }">
+                            ${msg.text}
+                        </div>
+                        <span class="text-[9px] text-gray-500 mt-1 px-1 font-mono">${msg.time}</span>
+                    </div>
+                `;
+            }).join('');
+
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function handleSendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text || !activeChatThreadId) return;
+
+            const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            chatThreads[activeChatThreadId].messages.push({
+                sender: 'You',
+                text: text,
+                time: timeNow
+            });
+
+            input.value = '';
+            renderActiveMessages();
+
+            // Simulate Real-time Seller Reply
+            setTimeout(() => {
+                const sellerName = chatThreads[activeChatThreadId].sellerName;
+                const automatedReplies = [
+                    "Sounds good! Let me know if you want to proceed.",
+                    "I can do free expedited shipping if you buy today.",
+                    "Item is packaged and ready for deployment!",
+                    "Thanks for reaching out! Let me check my inventory."
+                ];
+                const randomReply = automatedReplies[Math.floor(Math.random() * automatedReplies.length)];
+
+                chatThreads[activeChatThreadId].messages.push({
+                    sender: sellerName,
+                    text: randomReply,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+                renderActiveMessages();
+                showToast(`New reply from @${sellerName}`, 'info');
+            }, 1800);
+        }
+
+        function initiateChatWithSeller(sellerName, productId, productTitle) {
+            // Find existing thread or create new
+            let threadKey = Object.keys(chatThreads).find(k => chatThreads[k].sellerName === sellerName);
+
+            if (!threadKey) {
+                threadKey = 'thread_' + Date.now();
+                chatThreads[threadKey] = {
+                    id: threadKey,
+                    sellerName: sellerName,
+                    productId: productId,
+                    productTitle: productTitle,
+                    messages: [
+                        { sender: sellerName, text: `Hello! Thanks for your interest in ${productTitle}. How can I help?`, time: 'Just now' }
+                    ]
+                };
+            }
+
+            activeChatThreadId = threadKey;
+            renderChatThreads();
+            const drawer = document.getElementById('chatDrawer');
+            drawer.classList.remove('translate-x-full');
+        }
+
+        // SIMULATED CHECKOUT / BUY NOW
+        function buyNow(title, price) {
+            if (!currentUser) {
+                openAuthModal();
+                showToast('Sign in with Gmail to complete purchase.', 'info');
+                return;
+            }
+
+            showToast(`Order confirmed for "${title}" ($${price.toFixed(2)})!`, 'success');
+        }
+
+        // MODAL TOGGLES
+        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
+        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+        
+        function openListingModal() { 
+            if (!currentUser) {
+                openAuthModal();
+                showToast('Please sign in with Gmail to publish listings.', 'info');
+                return;
+            }
+            document.getElementById('listingModal').classList.remove('hidden'); 
+        }
+        function closeListingModal() { document.getElementById('listingModal').classList.add('hidden'); }
+        function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
+
+        // TOAST SYSTEM
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            const bgClass = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-brand-red' : 'bg-gray-800');
+
+            toast.className = `${bgClass} text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-white/10 pointer-events-auto transform translate-y-4 opacity-0 transition-all duration-300`;
+            toast.innerHTML = `
+                <i data-lucide="${type === 'success' ? 'check-circle' : 'info'}" class="w-4 h-4"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
+
